@@ -3,8 +3,162 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+function CampaignsView() {
+  const [objective, setObjective] = useState('');
+  const [dataContext, setDataContext] = useState('');
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateCampaigns = async () => {
+    if (!objective) return;
+    setIsGenerating(true);
+    setError('');
+    
+    try {
+      const res = await fetch('/api/campaigns/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objective, dataContext: dataContext || 'General audience, mixed engagement levels.' })
+      });
+      
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      
+      setCampaigns(data.campaigns);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const approveCampaign = (id: string) => {
+    setCampaigns(prev => prev.map(c => c.id === id ? { ...c, approved: true } : c));
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-1 space-y-6">
+        <div className="bg-gami-bg neo-border p-6 shadow-brutal">
+          <h2 className="font-display font-bold text-2xl uppercase italic mb-6">AI Campaign Architect</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block font-mono text-[10px] uppercase text-gray-500 mb-2">Campaign Objective</label>
+              <textarea 
+                value={objective}
+                onChange={e => setObjective(e.target.value)}
+                placeholder="e.g. Increase repeat purchases during the summer season..."
+                className="w-full bg-black/40 border-2 border-white/10 p-3 font-mono text-sm outline-none focus:border-gami-purple transition-colors resize-none h-24"
+              ></textarea>
+            </div>
+            
+            <div>
+              <label className="block font-mono text-[10px] uppercase text-gray-500 mb-2">Data Context (Optional)</label>
+              <textarea 
+                value={dataContext}
+                onChange={e => setDataContext(e.target.value)}
+                placeholder="e.g. Current users: 10k, low engagement on weekends..."
+                className="w-full bg-black/40 border-2 border-white/10 p-3 font-mono text-sm outline-none focus:border-gami-purple transition-colors resize-none h-24"
+              ></textarea>
+            </div>
+
+            <button 
+              onClick={generateCampaigns}
+              disabled={isGenerating || !objective}
+              className="w-full py-4 gami-gradient text-white font-display font-bold uppercase italic neo-border shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Generating...
+                </>
+              ) : 'Generate Campaigns'}
+            </button>
+            
+            {error && <p className="text-red-500 text-xs font-mono">{error}</p>}
+          </div>
+        </div>
+      </div>
+
+      <div className="lg:col-span-2 space-y-6">
+        {campaigns.length === 0 && !isGenerating && (
+          <div className="bg-black/40 border-2 border-dashed border-white/20 h-64 flex flex-col items-center justify-center text-center p-6">
+            <div className="w-12 h-12 gami-gradient neo-border flex items-center justify-center text-2xl mb-4">✨</div>
+            <p className="font-display font-bold text-lg uppercase text-gray-400">No campaigns generated</p>
+            <p className="text-xs font-mono text-gray-500 mt-2">Enter your objective and data context to generate AI-powered campaign templates.</p>
+          </div>
+        )}
+
+        {isGenerating && (
+          <div className="bg-black/40 border-2 border-dashed border-gami-purple h-64 flex flex-col items-center justify-center text-center p-6 animate-pulse">
+             <div className="w-12 h-12 gami-gradient neo-border flex items-center justify-center text-2xl mb-4 animate-spin">⚡</div>
+             <p className="font-display font-bold text-lg uppercase text-gami-accent">Analyzing Data & Generating Concepts...</p>
+          </div>
+        )}
+
+        {campaigns.length > 0 && !isGenerating && (
+          <div className="space-y-6">
+            <h3 className="font-display font-bold text-xl uppercase tracking-widest text-gray-400 border-b border-white/10 pb-4">AI Suggestions</h3>
+            {campaigns.map((campaign, idx) => (
+              <div key={idx} className={`bg-gami-bg neo-border p-6 relative transition-all ${campaign.approved ? 'border-green-500 shadow-[4px_4px_0px_0px_#22c55e]' : 'shadow-brutal hover:shadow-brutal-purple'}`}>
+                {campaign.approved && (
+                  <div className="absolute top-4 right-4 bg-green-500 text-black px-3 py-1 font-display font-bold text-xs uppercase italic">Approved ✓</div>
+                )}
+                
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 bg-gami-purple neo-border flex items-center justify-center shrink-0 font-bold">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-display font-bold text-2xl uppercase">{campaign.title}</h4>
+                    <span className="inline-block mt-1 px-2 py-1 bg-white/10 text-[10px] font-mono uppercase text-gami-accent">{campaign.type}</span>
+                  </div>
+                </div>
+                
+                <p className="text-gray-300 text-sm mb-6 leading-relaxed">{campaign.description}</p>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-black/50 border border-white/10 p-3">
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">Target Audience</p>
+                    <p className="text-xs font-bold">{campaign.targetAudience}</p>
+                  </div>
+                  <div className="bg-black/50 border border-white/10 p-3">
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">Suggested Rewards</p>
+                    <p className="text-xs font-bold text-green-400">{campaign.suggestedRewards}</p>
+                  </div>
+                  <div className="bg-black/50 border border-white/10 p-3">
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">Duration</p>
+                    <p className="text-xs font-bold">{campaign.duration}</p>
+                  </div>
+                </div>
+
+                {!campaign.approved && (
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => approveCampaign(campaign.id || idx.toString())}
+                      className="flex-1 bg-white text-black font-display font-bold uppercase text-xs py-3 neo-border hover:bg-gami-accent hover:text-white transition-colors"
+                    >
+                      Approve & Deploy
+                    </button>
+                    <button className="flex-1 border-2 border-white/20 font-display font-bold uppercase text-xs py-3 hover:border-white transition-colors">
+                      Customize
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('Overview');
   const [activeProject, setActiveProject] = useState('HyperQuest Alpha');
   const [env, setEnv] = useState('production');
   const [keyHidden, setKeyHidden] = useState(true);
@@ -41,13 +195,14 @@ export default function Dashboard() {
 
         <nav className="flex-grow p-4 space-y-2">
           {[
-            { name: 'Overview', active: true },
-            { name: 'API Keys', active: false },
-            { name: 'SDKs', active: false },
-            { name: 'Analytics', active: false },
-            { name: 'Webhooks', active: false }
+            { name: 'Overview' },
+            { name: 'Campaigns' },
+            { name: 'API Keys' },
+            { name: 'SDKs' },
+            { name: 'Analytics' },
+            { name: 'Webhooks' }
           ].map((item, idx) => (
-            <button key={idx} className={`w-full flex items-center gap-4 p-3 neo-border transition-all group ${item.active ? 'bg-gami-purple shadow-brutal text-white' : 'hover:bg-white/5 text-gray-400'}`}>
+            <button key={idx} onClick={() => setActiveTab(item.name)} className={`w-full flex items-center gap-4 p-3 neo-border transition-all group ${activeTab === item.name ? 'bg-gami-purple shadow-brutal text-white' : 'hover:bg-white/5 text-gray-400'}`}>
               <div className="w-6 h-6 shrink-0 bg-white/20"></div>
               {sidebarOpen && <span className="font-display font-bold text-sm uppercase tracking-wider">{item.name}</span>}
             </button>
@@ -98,15 +253,19 @@ export default function Dashboard() {
         <div className="p-8 flex-grow space-y-8">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="font-display font-bold text-5xl italic uppercase">Builder Dashboard</h1>
-              <p className="font-mono text-xs text-gami-accent mt-2">/ PROJECTS / {activeProject.toUpperCase().replace(' ', '_')} / OVERVIEW</p>
+              <h1 className="font-display font-bold text-5xl italic uppercase">{activeTab === 'Campaigns' ? 'Campaign Generation' : 'Builder Dashboard'}</h1>
+              <p className="font-mono text-xs text-gami-accent mt-2">/ PROJECTS / {activeProject.toUpperCase().replace(' ', '_')} / {activeTab.toUpperCase()}</p>
             </div>
-            <button className="gami-gradient neo-border px-6 py-3 font-display font-bold uppercase shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-              + New Integration
-            </button>
+            {activeTab === 'Overview' && (
+              <button className="gami-gradient neo-border px-6 py-3 font-display font-bold uppercase shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                + New Integration
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {activeTab === 'Overview' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gami-bg neo-border p-6 shadow-brutal-purple group hover:bg-gami-purple/5 transition-colors">
               <span className="font-mono text-xs text-gray-500 uppercase block mb-1">Total XP Distributed</span>
               <div className="flex items-baseline gap-2">
@@ -227,6 +386,12 @@ export default function Dashboard() {
               </section>
             </div>
           </div>
+            </>
+          )}
+
+          {activeTab === 'Campaigns' && (
+            <CampaignsView />
+          )}
         </div>
       </main>
 

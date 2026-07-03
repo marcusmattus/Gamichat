@@ -45,11 +45,11 @@ export default function Home() {
                 <div className="space-y-4 font-mono text-xs text-gray-300">
                   <div className="p-3 bg-white/5 border-l-2 border-gami-accent">
                     <p className="text-gami-accent mb-1">What industry?</p>
-                    <p>"I own a coffee shop."</p>
+                    <p>&quot;I own a coffee shop.&quot;</p>
                   </div>
                   <div className="p-3 bg-white/5 border-l-2 border-gami-accent">
                     <p className="text-gami-accent mb-1">Should customers earn XP?</p>
-                    <p>"Yes, for every coffee purchased."</p>
+                    <p>&quot;Yes, for every coffee purchased.&quot;</p>
                   </div>
                   <div className="p-3 bg-white/5 border-l-2 border-gami-accent">
                     <p className="text-gami-accent mb-1">Generating your gamification engine...</p>

@@ -9,7 +9,13 @@ export default function Studio() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  const [chatHistory, setChatHistory] = useState<{role: string, content: string, time: string, reward?: any}[]>([]);
+  const [chatHistory, setChatHistory] = useState<{role: string, content: string, time: string, reward?: any}[]>([
+    { 
+      role: 'agent', 
+      content: 'Greetings. I am the Gami AI Architect. Let’s build your gamification engine. What type of business do you run?', 
+      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    }
+  ]);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   
@@ -28,17 +34,6 @@ export default function Studio() {
       router.push('/login');
     }
   }, [user, loading, router]);
-
-  useEffect(() => {
-    // Initial chat message
-    setChatHistory([
-      { 
-        role: 'agent', 
-        content: 'Greetings. I am the Gami AI Architect. Let’s build your gamification engine. What type of business do you run?', 
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-      }
-    ]);
-  }, []);
 
   useEffect(() => {
     if (chatWindowRef.current) {
@@ -82,7 +77,7 @@ export default function Studio() {
     }
   };
 
-  let nextStartTime = 0;
+  const nextStartTimeRef = useRef(0);
   const playAudioChunk = async (audioCtx: AudioContext, base64Audio: string) => {
     try {
       const binaryStr = atob(base64Audio);
@@ -102,11 +97,11 @@ export default function Studio() {
       source.buffer = buffer;
       source.connect(audioCtx.destination);
       
-      if (nextStartTime < audioCtx.currentTime) {
-        nextStartTime = audioCtx.currentTime;
+      if (nextStartTimeRef.current < audioCtx.currentTime) {
+        nextStartTimeRef.current = audioCtx.currentTime;
       }
-      source.start(nextStartTime);
-      nextStartTime += buffer.duration;
+      source.start(nextStartTimeRef.current);
+      nextStartTimeRef.current += buffer.duration;
     } catch (e) {
       console.error('Error playing audio chunk', e);
     }
@@ -329,7 +324,7 @@ export default function Studio() {
           </div>
 
           <div className="flex-1 overflow-y-auto font-mono text-[10px] text-gray-400 bg-black/50 p-4 border border-white/5">
-            // Live Generated Config
+            {`// Live Generated Config`}
             <br/>
             {`{
   "project": "Pending",
