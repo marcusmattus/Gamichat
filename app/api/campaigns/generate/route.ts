@@ -23,10 +23,23 @@ Return the response as a JSON array of objects with the following structure:
     "description": "Short description of the campaign",
     "suggestedRewards": "e.g., 500 XP, 10% Discount",
     "targetAudience": "e.g., Lapsed users",
-    "duration": "e.g., 14 days"
+    "duration": "e.g., 14 days",
+    "predictedMetrics": {
+      "estimatedReach": "e.g., 12,500 users",
+      "expectedConversion": "e.g., 14.5%",
+      "engagementLift": "e.g., +28%"
+    },
+    "engagementGrowthTrend": [
+      { "period": "Day 0", "engagement": 100 },
+      { "period": "Day 3", "engagement": 125 },
+      { "period": "Day 6", "engagement": 160 },
+      { "period": "Day 9", "engagement": 210 },
+      { "period": "Day 12", "engagement": 280 },
+      { "period": "Day 15", "engagement": 350 }
+    ]
   }
 ]
-Return ONLY valid JSON, no markdown formatting.`;
+Return ONLY valid JSON, no markdown formatting. Keep the trends realistic but positive based on the rewards structure.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.5-flash',

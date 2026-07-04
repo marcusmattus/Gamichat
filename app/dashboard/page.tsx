@@ -2,6 +2,146 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+
+function CampaignTrendChart({ data }: { data: any[] }) {
+  if (!data || data.length === 0) return null;
+
+  return (
+    <div className="h-28 w-full mt-4 bg-black/30 border border-white/5 p-2 rounded relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+          <defs>
+            <linearGradient id="colorEngagement" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="period" hide />
+          <YAxis hide domain={['dataMin - 10', 'dataMax + 10']} />
+          <Tooltip 
+            contentStyle={{ backgroundColor: '#111', borderColor: '#333', borderRadius: '4px' }}
+            labelStyle={{ color: '#aaa', fontFamily: 'monospace', fontSize: '10px' }}
+            itemStyle={{ color: '#a855f7', fontFamily: 'monospace', fontSize: '11px', fontWeight: 'bold' }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="engagement" 
+            stroke="#a855f7" 
+            strokeWidth={2}
+            fillOpacity={1} 
+            fill="url(#colorEngagement)" 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+interface CampaignPreviewModalProps {
+  campaign: any;
+  objective: string;
+  onClose: () => void;
+  onApprove: (id: string) => void;
+}
+
+function CampaignPreviewModal({ campaign, objective, onClose, onApprove }: CampaignPreviewModalProps) {
+  if (!campaign) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-gami-bg border-4 border-black w-full max-w-2xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative scanline">
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 w-10 h-10 border-2 border-black flex items-center justify-center bg-white text-black font-display font-bold hover:bg-gami-accent hover:text-white transition-colors shadow-brutal active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+        >
+          ✕
+        </button>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-gami-purple neo-border flex items-center justify-center text-xl font-bold">
+            ✨
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase text-gami-accent">AI Generated Campaign Concept</span>
+            <h3 className="font-display font-bold text-2xl md:text-3xl uppercase tracking-tight">{campaign.title}</h3>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-black/40 border border-white/10 p-4 neo-border">
+            <span className="block font-mono text-[10px] uppercase text-gray-500 mb-1">Target Campaign Type</span>
+            <span className="px-2.5 py-1 bg-gami-purple text-xs font-mono font-bold uppercase">{campaign.type}</span>
+          </div>
+
+          <div>
+            <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gray-400 mb-2">Original Campaign Objective</h4>
+            <p className="font-mono text-xs text-gray-300 bg-black/20 p-3 border border-white/5">{objective || "Not specified"}</p>
+          </div>
+
+          <div>
+            <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gray-400 mb-2">Detailed Description</h4>
+            <p className="text-sm text-gray-300 leading-relaxed bg-black/10 p-4 border border-white/5">{campaign.description}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-black/50 border border-white/10 p-4">
+              <span className="block font-mono text-[10px] uppercase text-gray-500 mb-1">Target Audience</span>
+              <p className="text-sm font-bold text-white">{campaign.targetAudience}</p>
+            </div>
+            <div className="bg-black/50 border border-white/10 p-4">
+              <span className="block font-mono text-[10px] uppercase text-gray-500 mb-1">Duration</span>
+              <p className="text-sm font-bold text-white">{campaign.duration}</p>
+            </div>
+            <div className="bg-black/50 border border-white/10 p-4">
+              <span className="block font-mono text-[10px] uppercase text-gray-500 mb-1">Suggested Rewards</span>
+              <p className="text-sm font-bold text-green-400">{campaign.suggestedRewards}</p>
+            </div>
+          </div>
+
+          {campaign.predictedMetrics && (
+            <div>
+              <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gray-400 mb-3">AI Prediction Analysis</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gami-purple/10 border-2 border-gami-purple/30 p-4">
+                  <span className="block font-mono text-[10px] uppercase text-gami-accent mb-1">Estimated Reach</span>
+                  <p className="text-base font-display font-bold text-white">{campaign.predictedMetrics.estimatedReach}</p>
+                </div>
+                <div className="bg-gami-purple/10 border-2 border-gami-purple/30 p-4">
+                  <span className="block font-mono text-[10px] uppercase text-gami-accent mb-1">Expected Conversion</span>
+                  <p className="text-base font-display font-bold text-white">{campaign.predictedMetrics.expectedConversion}</p>
+                </div>
+                <div className="bg-gami-purple/10 border-2 border-gami-purple/30 p-4">
+                  <span className="block font-mono text-[10px] uppercase text-gami-accent mb-1">Engagement Lift</span>
+                  <p className="text-base font-display font-bold text-green-400">{campaign.predictedMetrics.engagementLift}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/10">
+            <button 
+              onClick={onClose}
+              className="flex-grow border-2 border-white/20 font-display font-bold uppercase text-xs py-4 hover:border-white transition-colors"
+            >
+              Back to Suggestions
+            </button>
+            <button 
+              onClick={() => {
+                onApprove(campaign.id);
+                onClose();
+              }}
+              className="flex-grow bg-white text-black font-display font-bold uppercase text-xs py-4 neo-border shadow-brutal hover:bg-gami-accent hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+            >
+              Approve & Deploy Campaign
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CampaignsView() {
   const [objective, setObjective] = useState('');
@@ -9,6 +149,7 @@ function CampaignsView() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [selectedPreviewCampaign, setSelectedPreviewCampaign] = useState<any | null>(null);
 
   const generateCampaigns = async () => {
     if (!objective) return;
@@ -134,16 +275,44 @@ function CampaignsView() {
                   </div>
                 </div>
 
+                {/* Predicted User Engagement Trend & Performance Metrics for Approved Campaigns */}
+                {campaign.approved && (
+                  <div className="mt-6 border-t border-white/10 pt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-mono text-[10px] uppercase text-gami-accent">Predicted Engagement Growth (15 Days)</span>
+                      {campaign.predictedMetrics?.engagementLift && (
+                        <span className="text-xs font-bold text-green-400 font-mono">{campaign.predictedMetrics.engagementLift} lift</span>
+                      )}
+                    </div>
+                    {campaign.engagementGrowthTrend && (
+                      <CampaignTrendChart data={campaign.engagementGrowthTrend} />
+                    )}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="bg-black/20 p-2 border border-white/5">
+                        <span className="block font-mono text-[9px] uppercase text-gray-500">Reach Goal</span>
+                        <span className="text-xs font-bold">{campaign.predictedMetrics?.estimatedReach || "N/A"}</span>
+                      </div>
+                      <div className="bg-black/20 p-2 border border-white/5">
+                        <span className="block font-mono text-[9px] uppercase text-gray-500">Target Conv.</span>
+                        <span className="text-xs font-bold">{campaign.predictedMetrics?.expectedConversion || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {!campaign.approved && (
                   <div className="flex gap-4">
+                    <button 
+                      onClick={() => setSelectedPreviewCampaign(campaign)}
+                      className="flex-1 bg-gami-purple text-white font-display font-bold uppercase text-xs py-3 neo-border hover:bg-gami-accent hover:text-white transition-all shadow-brutal hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
+                    >
+                      Preview & Analyze
+                    </button>
                     <button 
                       onClick={() => approveCampaign(campaign.id || idx.toString())}
                       className="flex-1 bg-white text-black font-display font-bold uppercase text-xs py-3 neo-border hover:bg-gami-accent hover:text-white transition-colors"
                     >
-                      Approve & Deploy
-                    </button>
-                    <button className="flex-1 border-2 border-white/20 font-display font-bold uppercase text-xs py-3 hover:border-white transition-colors">
-                      Customize
+                      Quick Deploy
                     </button>
                   </div>
                 )}
@@ -152,6 +321,16 @@ function CampaignsView() {
           </div>
         )}
       </div>
+
+      {/* Campaign Detailed Preview Modal */}
+      {selectedPreviewCampaign && (
+        <CampaignPreviewModal 
+          campaign={selectedPreviewCampaign} 
+          objective={objective}
+          onClose={() => setSelectedPreviewCampaign(null)}
+          onApprove={approveCampaign}
+        />
+      )}
     </div>
   );
 }
