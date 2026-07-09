@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth-context';
+import { GamiWalletProvider } from '@/lib/gami-wallet-context';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -17,7 +18,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans hexagon-bg text-white selection:bg-gami-accent selection:text-white min-h-screen flex flex-col`} suppressHydrationWarning>
         <AuthProvider>
-          {children}
+          <GamiWalletProvider>
+            {children}
+          </GamiWalletProvider>
         </AuthProvider>
       </body>
     </html>
