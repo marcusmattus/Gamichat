@@ -24,6 +24,43 @@ npx expo start
 
 Press `w` for web, `i` for iOS simulator, `a` for Android.
 
+## App Store (iOS)
+
+| Setting | Value |
+|---------|-------|
+| Team ID (App ID Prefix) | `28DWZWQ4YG` |
+| Bundle ID | `com.gami.gamiwalletapp` |
+
+### One-time setup
+
+```bash
+npm install -g eas-cli
+eas login
+cd gami-wallet
+eas init          # links project → sets EAS_PROJECT_ID in .env
+```
+
+Register `com.gami.gamiwalletapp` in [Apple Developer → Identifiers](https://developer.apple.com/account/resources/identifiers/list) and create the app in [App Store Connect](https://appstoreconnect.apple.com).
+
+### Build for App Store
+
+```bash
+npm run build:ios              # production .ipa via EAS
+npm run submit:ios             # submit latest build to App Store Connect
+# or combined:
+npm run build:submit:ios
+```
+
+For automated submit, add an App Store Connect API key — see `credentials/README.md`.
+
+### Build profiles (`eas.json`)
+
+| Profile | Use |
+|---------|-----|
+| `development` | Dev client, iOS simulator |
+| `preview` | Internal TestFlight / ad-hoc |
+| `production` | App Store release (`distribution: store`) |
+
 ## Screens (14)
 
 | # | Route | Screen |
